@@ -27,24 +27,15 @@
         }
 
         .phone-frame {
-            width: 375px;
-            height: 812px;
+            width: 100%;
+            min-height: 100vh;
             background: #F7F7F7;
-            border-radius: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
+            overflow: auto;
             position: relative;
         }
 
         .status-bar {
-            height: 44px;
-            background: #1CB0F6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
+            display: none;
         }
 
         .app-bar {
@@ -409,6 +400,56 @@
             border-left: 6px solid #58CC02;
         }
 
+        .action-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fadeIn 0.2s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .overlay-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .overlay-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .overlay-btn:active {
+            transform: scale(0.95);
+        }
+
+        .overlay-btn.edit-btn {
+            background: #1CB0F6;
+            color: white;
+        }
+
+        .overlay-btn.delete-btn {
+            background: #FF4B4B;
+            color: white;
+        }
+
         .schedule-type-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -493,12 +534,12 @@
         }
 
         .schedule-time {
-            font-size: 20px;
-            font-weight: 800;
-            color: #1CB0F6;
-            background: #E3F6FF;
-            padding: 6px 14px;
-            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #777;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
         }
 
         .schedule-temp {
@@ -1937,87 +1978,95 @@
 
         function setupItemSwipe() {
             const cards = document.querySelectorAll('.schedule-card');
-            let currentSwipedCard = null;
 
             cards.forEach(card => {
+                let longPressTimer = null;
                 let startX = 0;
                 let startY = 0;
-                let currentX = 0;
-                let isDragging = false;
-                let isHorizontalSwipe = false;
+                let hasMoved = false;
 
-                // 触摸事件
                 const touchStart = (e) => {
-                    if (currentSwipedCard && currentSwipedCard !== card) {
-                        currentSwipedCard.classList.remove('swiping');
-                    }
-
+                    hasMoved = false;
                     const touch = e.touches ? e.touches[0] : e;
                     startX = touch.clientX;
                     startY = touch.clientY;
-                    isDragging = true;
-                    isHorizontalSwipe = false;
+
+                    // 开始长按计时器
+                    longPressTimer = setTimeout(() => {
+                        if (!hasMoved) {
+                            showActionOverlay(card);
+                        }
+                    }, 500); // 500ms长按
                 };
 
                 const touchMove = (e) => {
-                    if (!isDragging) return;
-
                     const touch = e.touches ? e.touches[0] : e;
-                    currentX = touch.clientX;
-                    const currentY = touch.clientY;
-                    const diffX = startX - currentX;
-                    const diffY = Math.abs(startY - currentY);
+                    const deltaX = Math.abs(touch.clientX - startX);
+                    const deltaY = Math.abs(touch.clientY - startY);
 
-                    if (!isHorizontalSwipe && Math.abs(diffX) > 10) {
-                        if (Math.abs(diffX) > diffY) {
-                            isHorizontalSwipe = true;
-                        }
-                    }
-
-                    if (isHorizontalSwipe) {
-                        if (e.preventDefault) e.preventDefault();
-
-                        if (diffX > 20) {
-                            card.classList.add('swiping');
-                            currentSwipedCard = card;
-                        } else if (diffX < -20) {
-                            card.classList.remove('swiping');
-                            if (currentSwipedCard === card) {
-                                currentSwipedCard = null;
-                            }
-                        }
+                    // 如果移动超过10px，取消长按
+                    if (deltaX > 10 || deltaY > 10) {
+                        hasMoved = true;
+                        clearTimeout(longPressTimer);
                     }
                 };
 
                 const touchEnd = () => {
-                    isDragging = false;
-                    isHorizontalSwipe = false;
+                    clearTimeout(longPressTimer);
                 };
 
-                // 添加触摸和鼠标事件（电脑上用鼠标测试）
                 card.addEventListener('touchstart', touchStart, { passive: true });
-                card.addEventListener('touchmove', touchMove, { passive: false });
+                card.addEventListener('touchmove', touchMove, { passive: true });
                 card.addEventListener('touchend', touchEnd, { passive: true });
 
                 card.addEventListener('mousedown', touchStart);
                 card.addEventListener('mousemove', touchMove);
                 card.addEventListener('mouseup', touchEnd);
                 card.addEventListener('mouseleave', touchEnd);
-
-                // 点击关闭滑动状态
-                card.addEventListener('click', (e) => {
-                    if (card.classList.contains('swiping')) {
-                        if (!e.target.closest('.schedule-actions')) {
-                            card.classList.remove('swiping');
-                            if (currentSwipedCard === card) {
-                                currentSwipedCard = null;
-                            }
-                            e.stopPropagation();
-                            e.preventDefault();
-                        }
-                    }
-                });
             });
+        }
+
+        function showActionOverlay(card) {
+            // 移除其他卡片的蒙层
+            document.querySelectorAll('.action-overlay').forEach(el => el.remove());
+
+            // 创建蒙层
+            const overlay = document.createElement('div');
+            overlay.className = 'action-overlay';
+            overlay.innerHTML = `
+                <div class="overlay-actions">
+                    <button class="overlay-btn edit-btn">✏️ 编辑</button>
+                    <button class="overlay-btn delete-btn">🗑️ 删除</button>
+                </div>
+            `;
+
+            // 获取行程数据
+            const dayIndex = parseInt(card.closest('.day-content').dataset.dayIndex);
+            const itemId = parseInt(card.dataset.itemId);
+
+            // 编辑按钮
+            overlay.querySelector('.edit-btn').onclick = (e) => {
+                e.stopPropagation();
+                overlay.remove();
+                editScheduleItem(itemId, dayIndex);
+            };
+
+            // 删除按钮
+            overlay.querySelector('.delete-btn').onclick = (e) => {
+                e.stopPropagation();
+                overlay.remove();
+                if (confirm('确定删除这条行程吗？')) {
+                    deleteScheduleItem(itemId, dayIndex);
+                }
+            };
+
+            // 点击蒙层关闭
+            overlay.onclick = () => {
+                overlay.remove();
+            };
+
+            card.style.position = 'relative';
+            card.appendChild(overlay);
         }
 
         function switchToDay(dayIndex) {
@@ -2305,6 +2354,42 @@
             if (confirm('确定要删除这项行程吗？')) {
                 deleteScheduleItem(itemId, dayIndex);
             }
+        }
+
+        function editScheduleItem(itemId, dayIndex) {
+            const item = tripData.days[dayIndex].items.find(i => i.id === itemId);
+            if (!item) return;
+
+            // 填充编辑对话框
+            document.getElementById('editDialogTitle').textContent = '编辑行程';
+            document.getElementById('editingItemId').value = itemId;
+            document.getElementById('editingItemType').value = item.type;
+            document.getElementById('inputDateSelect').value = dayIndex;
+
+            // 根据类型填充字段
+            if (item.type === 'flight') {
+                document.getElementById('flightNumber').value = item.flightNumber || '';
+                document.getElementById('departure').value = item.departure || '';
+                document.getElementById('departureTime').value = item.departureTime || '';
+                document.getElementById('arrival').value = item.arrival || '';
+                document.getElementById('arrivalTime').value = item.arrivalTime || '';
+            } else if (item.type === 'hotel') {
+                document.getElementById('hotelName').value = item.name || '';
+                document.getElementById('hotelAddress').value = item.address || '';
+                document.getElementById('checkIn').value = item.checkIn || '';
+                document.getElementById('checkOut').value = item.checkOut || '';
+            } else if (item.type === 'activity') {
+                document.getElementById('activityTime').value = item.time || '';
+                document.getElementById('activityName').value = item.name || '';
+                document.getElementById('activityLocation').value = item.location || '';
+                document.getElementById('activityNotes').value = item.notes || '';
+            }
+
+            // 切换到对应类型
+            switchItemType(item.type);
+
+            // 显示对话框
+            document.getElementById('editDialog').classList.add('active');
         }
 
         function deleteScheduleItem(itemId, dayIndex) {
