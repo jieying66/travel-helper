@@ -1,0 +1,2655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1CB0F6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="旅游助手">
+    <link rel="manifest" href="manifest.json">
+    <title>旅游助手 - 预览版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, #1CB0F6 0%, #1CB0F6 200px, #F7F7F7 200px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #F7F7F7;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #1CB0F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .app-bar {
+            height: 56px;
+            background: #1CB0F6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-shadow: 0 4px 12px rgba(123, 104, 190, 0.2);
+        }
+
+        .app-bar-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .icon-button {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .icon-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .icon-button:active {
+            transform: scale(0.95);
+        }
+
+        .content {
+            height: calc(812px - 100px);
+            overflow-y: auto;
+            background: #F7F7F7;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Overview Screen */
+        .overview-header {
+            padding: 20px;
+            background: white;
+            border-radius: 0 0 24px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .trip-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #3C3C3C;
+        }
+
+        .trip-dates {
+            font-size: 15px;
+            color: #777;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .trip-duration {
+            font-size: 15px;
+            color: #58CC02;
+            font-weight: 700;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, #1CB0F6, #58CC02);
+            margin: 16px 0;
+            border-radius: 2px;
+        }
+
+        .day-list {
+            padding: 0 16px 16px 16px;
+        }
+
+        .day-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+        }
+
+        .day-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(28, 176, 246, 0.2);
+            border-color: #1CB0F6;
+        }
+
+        .day-card:active {
+            transform: translateY(0);
+        }
+
+        .day-card.today {
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFF 100%);
+            border-color: #FFC800;
+        }
+
+        .day-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .day-date {
+            font-size: 18px;
+            font-weight: 700;
+            color: #3C3C3C;
+        }
+
+        .today-badge {
+            font-size: 11px;
+            color: #FF9600;
+            font-weight: 800;
+            background: #FFE5B4;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .day-item-count {
+            font-size: 14px;
+            color: white;
+            background: #58CC02;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .day-preview {
+            margin-top: 12px;
+        }
+
+        .day-route {
+            font-size: 14px;
+            color: #4B4B4B;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .route-arrow {
+            color: #1CB0F6;
+            margin: 0 4px;
+            font-weight: 700;
+        }
+
+        /* Detail Screen */
+        .detail-header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .detail-header-top {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-date {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1C1B1F;
+        }
+
+        .detail-count {
+            font-size: 12px;
+            color: #49454F;
+        }
+
+        .date-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .date-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .date-tab {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            font-weight: 700;
+        }
+
+        .date-tab.active {
+            background: white;
+            color: #1CB0F6;
+            border: 2px solid white;
+            transform: scale(1.05);
+        }
+
+        .date-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .photo-section {
+            background: white;
+            padding: 16px;
+            margin-top: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .photo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .photo-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1C1B1F;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #F5F5F5;
+            cursor: pointer;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 4px 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .add-photo-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+            border: 2px dashed #79747E;
+            border-radius: 8px;
+            background: #F5F5F5;
+            color: #79747E;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-photo-btn:hover {
+            background: #E7E0EC;
+            border-color: #6750A4;
+            color: #6750A4;
+        }
+
+        .detail-content-wrapper {
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .detail-content-slider {
+            display: flex;
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+
+        .detail-content-page {
+            min-width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .schedule-list {
+            padding: 16px;
+        }
+
+        .schedule-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            position: relative;
+            transition: transform 0.2s;
+            border: 3px solid #E3F6FF;
+        }
+
+        .schedule-card.flight {
+            border-left: 6px solid #1CB0F6;
+            background: linear-gradient(135deg, #E3F6FF 0%, #FFF 100%);
+        }
+
+        .schedule-card.hotel {
+            border-left: 6px solid #FFC800;
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFF 100%);
+        }
+
+        .schedule-card.activity {
+            border-left: 6px solid #58CC02;
+        }
+
+        .schedule-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .schedule-type-badge.flight {
+            background: #1CB0F6;
+            color: white;
+        }
+
+        .schedule-type-badge.hotel {
+            background: #FFC800;
+            color: white;
+        }
+
+        .schedule-type-badge.activity {
+            background: #58CC02;
+            color: white;
+        }
+
+        .schedule-card.swiping {
+            transform: translateX(-160px);
+        }
+
+        .schedule-actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            transform: translateX(100%);
+            transition: transform 0.2s;
+            border-radius: 0 20px 20px 0;
+            overflow: hidden;
+        }
+
+        .schedule-card.swiping .schedule-actions {
+            transform: translateX(0);
+        }
+
+        .action-btn {
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.9);
+        }
+
+        .action-btn.edit {
+            background: #58CC02;
+        }
+
+        .action-btn.delete {
+            background: #FF4B4B;
+        }
+
+        .action-btn-text {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .schedule-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .schedule-time {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1CB0F6;
+            background: #E3F6FF;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .schedule-temp {
+            font-size: 13px;
+            color: #FF9600;
+            background: #FFF3E0;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .schedule-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .schedule-icon {
+            width: 20px;
+            height: 20px;
+            color: #1CB0F6;
+            flex-shrink: 0;
+            margin-top: 2px;
+            font-size: 18px;
+        }
+
+        .schedule-text {
+            flex: 1;
+            font-size: 15px;
+            color: #3C3C3C;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .schedule-location {
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        .schedule-note {
+            background: #FFF9E6;
+            color: #7A5C00;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-top: 12px;
+            font-weight: 500;
+            border-left: 4px solid #FFC800;
+        }
+
+        .menu-button {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 18px;
+        }
+
+        .menu-button:hover {
+            background: #E7E0EC;
+        }
+
+        /* FAB */
+        .fab-menu {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .fab-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fab-label {
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            font-weight: 700;
+        }
+
+        .fab-menu:hover .fab-label {
+            opacity: 1;
+        }
+
+        .fab-small {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            color: #58CC02;
+            border: 4px solid #58CC02;
+            box-shadow: 0 4px 20px rgba(88, 204, 2, 0.3);
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .fab-small:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 24px rgba(88, 204, 2, 0.4);
+        }
+
+        .fab-small:active {
+            transform: scale(0.95);
+        }
+
+        .detail-date-header {
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid #E7E0EC;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-date-info {
+            flex: 1;
+        }
+
+        .detail-current-date {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1C1B1F;
+        }
+
+        .detail-item-count {
+            font-size: 13px;
+            color: #49454F;
+            margin-top: 2px;
+        }
+
+        .detail-photos-preview {
+            display: flex;
+            gap: 4px;
+        }
+
+        .detail-photo-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .detail-photo-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .detail-photo-more {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: #E7E0EC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #49454F;
+            cursor: pointer;
+        }
+
+        .schedule-photos {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .schedule-photo-item {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .schedule-photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Dialog */
+        .dialog-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .dialog-overlay.active {
+            display: flex;
+        }
+
+        .dialog {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 0;
+            width: 100%;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dialog-header {
+            padding: 20px;
+            border-bottom: 2px solid #E7E0EC;
+            flex-shrink: 0;
+        }
+
+        .dialog-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        .dialog-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .type-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #E7E0EC;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .type-option.active {
+            border-color: #1CB0F6;
+            background: #E3F6FF;
+        }
+
+        .type-option.active.flight {
+            border-color: #1CB0F6;
+            background: #E3F6FF;
+        }
+
+        .type-option.active.hotel {
+            border-color: #FFC800;
+            background: #FFF9E6;
+        }
+
+        .type-option.active.activity {
+            border-color: #58CC02;
+            background: #F0F9E8;
+        }
+
+        .type-icon {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .type-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .type-option.active .type-label {
+            color: #1A1A1A;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-label {
+            font-size: 12px;
+            color: #49454F;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #79747E;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6750A4;
+            border-width: 2px;
+        }
+
+        textarea.form-input {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .dialog-buttons {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            background: white;
+            border-top: 2px solid #E7E0EC;
+            flex-shrink: 0;
+        }
+
+        .button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        .button-outline {
+            background: white;
+            color: #1CB0F6;
+            border: 3px solid #1CB0F6;
+        }
+
+        .button-outline:hover {
+            background: #E3F6FF;
+        }
+
+        .button-filled {
+            background: #58CC02;
+            color: white;
+            box-shadow: 0 4px 12px rgba(88, 204, 2, 0.3);
+        }
+
+        .button-filled:hover {
+            background: #4CAF00;
+            box-shadow: 0 6px 16px rgba(88, 204, 2, 0.4);
+        }
+
+        .button-filled:disabled {
+            background: #CCCCCC;
+            cursor: not-allowed;
+        }
+
+        .share-link {
+            background: #E7E0EC;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 16px 0;
+            color: #1C1B1F;
+        }
+
+        .share-update-time {
+            text-align: center;
+            font-size: 12px;
+            color: #49454F;
+            margin: 8px 0;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state div:last-child {
+            font-size: 16px;
+            font-weight: 600;
+            color: #AAAAAA;
+        }
+
+        .mascot-welcome {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            margin: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .mascot-icon {
+            font-size: 60px;
+            margin-bottom: 12px;
+        }
+
+        .mascot-svg {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
+        }
+
+        .mascot-text {
+            font-size: 16px;
+            color: #666;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        /* 自定义IP形象 - 可爱考拉宝宝 */
+        .koala-icon {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background: #E8E8E8;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .koala-icon::before {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 32px;
+            background: #E8E8E8;
+            border-radius: 50%;
+            top: -8px;
+        }
+
+        .koala-icon::before {
+            left: 8px;
+        }
+
+        .koala-icon::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 32px;
+            background: #E8E8E8;
+            border-radius: 50%;
+            top: -8px;
+            right: 8px;
+        }
+
+        .koala-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .koala-eyes {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .koala-eye {
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+        }
+
+        .koala-nose {
+            width: 16px;
+            height: 12px;
+            background: #333;
+            border-radius: 50% 50% 0 0;
+        }
+
+        .koala-cheek {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #FFB6C1;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        .koala-cheek.left {
+            left: 8px;
+            top: 50%;
+        }
+
+        .koala-cheek.right {
+            right: 8px;
+            top: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">9:41</div>
+
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="screen">
+            <div class="app-bar">
+                <div class="app-bar-title">创建行程</div>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="content" style="padding: 24px;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                    <div class="koala-icon" style="margin: 0 auto 16px;">
+                        <div class="koala-face">
+                            <div class="koala-eyes">
+                                <div class="koala-eye"></div>
+                                <div class="koala-eye"></div>
+                            </div>
+                            <div class="koala-nose"></div>
+                        </div>
+                        <div class="koala-cheek left"></div>
+                        <div class="koala-cheek right"></div>
+                    </div>
+                    <div style="font-size: 20px; font-weight: bold; color: #1C1B1F;">欢迎使用旅游助手</div>
+                    <div style="font-size: 14px; color: #49454F; margin-top: 8px;">让考拉宝宝陪你规划完美旅程！</div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">旅游名称</label>
+                    <input type="text" class="form-input" id="setupTripName" placeholder="例如：云南之旅">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">开始日期</label>
+                    <input type="date" class="form-input" id="setupStartDate">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">结束日期</label>
+                    <input type="date" class="form-input" id="setupEndDate">
+                </div>
+                <div class="form-field" id="totalDaysDisplay" style="display: none;">
+                    <div style="font-size: 14px; color: #6750A4; font-weight: 500;">
+                        总天数：<span id="calculatedDays">-</span> 天
+                    </div>
+                </div>
+                <button class="button button-filled" onclick="createTrip()" style="width: 100%; margin-top: 24px;">开始规划行程</button>
+            </div>
+        </div>
+
+        <!-- Overview Screen -->
+        <div id="overviewScreen" class="screen active">
+            <div class="app-bar">
+                <div class="app-bar-title">行程概览</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="icon-button" onclick="showTripSettings()">⚙</button>
+                    <button class="icon-button" onclick="showShareDialog()">⤴</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="overview-header">
+                    <div class="trip-title" id="tripTitle">示例旅游行程</div>
+                    <div class="trip-dates" id="tripDates">2024-01-10 至 01-12</div>
+                    <div class="trip-duration" id="tripDuration">共 3 天</div>
+                    <div class="divider"></div>
+                </div>
+                <div class="day-list" id="dayList">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Screen -->
+        <div id="detailScreen" class="screen">
+            <div class="app-bar" style="flex-direction: column; height: auto; padding: 0;">
+                <div style="display: flex; width: 100%; align-items: center; padding: 8px 16px;">
+                    <button class="icon-button" onclick="showOverview()">←</button>
+                    <div class="date-tabs" id="dateTabs" style="flex: 1; padding: 0; margin: 0 8px;">
+                        <!-- 动态加载日期标签 -->
+                    </div>
+                    <div style="width: 40px;"></div>
+                </div>
+            </div>
+            <div class="detail-date-header">
+                <div class="detail-date-info">
+                    <div class="detail-current-date" id="detailCurrentDate">01月10日 星期三</div>
+                    <div class="detail-item-count" id="detailItemCount">3 项行程</div>
+                </div>
+                <div class="detail-photos-preview" id="detailPhotosPreview">
+                    <!-- 动态加载照片预览 -->
+                </div>
+            </div>
+            <div class="content" style="display: flex; flex-direction: column; padding: 0;">
+                <div class="detail-content-wrapper">
+                    <div class="detail-content-slider" id="contentSlider">
+                        <!-- 动态加载每天的内容 -->
+                    </div>
+                </div>
+            </div>
+            <div class="fab-menu">
+                <div class="fab-item">
+                    <div class="fab-label">添加照片</div>
+                    <button class="fab-small" onclick="showPhotoDialog()">📷</button>
+                </div>
+                <div class="fab-item">
+                    <div class="fab-label">添加行程</div>
+                    <button class="fab-small" onclick="showAddDialog()">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Dialog -->
+        <div class="dialog-overlay" id="editDialog">
+            <div class="dialog">
+                <div class="dialog-header">
+                    <div class="dialog-title" id="editDialogTitle">添加行程</div>
+                </div>
+                <div class="dialog-content">
+                    <input type="hidden" id="editingItemId" value="">
+                    <input type="hidden" id="editingItemType" value="activity">
+
+                    <!-- 类型选择器 -->
+                    <div class="type-selector">
+                        <div class="type-option activity active" onclick="selectItemType('activity')">
+                            <div class="type-icon">🎯</div>
+                            <div class="type-label">活动</div>
+                        </div>
+                        <div class="type-option flight" onclick="selectItemType('flight')">
+                            <div class="type-icon">✈️</div>
+                            <div class="type-label">航班</div>
+                        </div>
+                        <div class="type-option hotel" onclick="selectItemType('hotel')">
+                            <div class="type-icon">🏨</div>
+                            <div class="type-label">酒店</div>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">选择日期</label>
+                        <select class="form-input" id="inputDateSelect">
+                            <!-- 动态加载可选日期 -->
+                        </select>
+                    </div>
+
+                    <!-- 活动类型表单 -->
+                    <div class="form-section activity active" id="activityForm">
+                        <div class="form-field">
+                            <label class="form-label">时间</label>
+                            <input type="time" class="form-input" id="inputTime" value="09:00">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">地点</label>
+                            <input type="text" class="form-input" id="inputLocation" placeholder="例如：五大道历史文化街区">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">活动内容</label>
+                            <textarea class="form-input" id="inputActivity" placeholder="例如：游览小洋楼建筑群" rows="3"></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">备注（可选）</label>
+                            <textarea class="form-input" id="inputNote" placeholder="补充说明" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 航班类型表单 -->
+                    <div class="form-section flight" id="flightForm">
+                        <div class="form-field">
+                            <label class="form-label">起飞时间</label>
+                            <input type="time" class="form-input" id="inputFlightTime" value="09:00">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">抵达时间（可选）</label>
+                            <input type="time" class="form-input" id="inputArrivalTime" placeholder="例如：11:40">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">出发地</label>
+                            <input type="text" class="form-input" id="inputFlightFrom" placeholder="例如：成都天府国际机场2号航站楼">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">目的地</label>
+                            <input type="text" class="form-input" id="inputFlightTo" placeholder="例如：赤峰玉龙机场">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">航班号（可选）</label>
+                            <input type="text" class="form-input" id="inputFlightNumber" placeholder="例如：G54733">
+                        </div>
+                    </div>
+
+                    <!-- 酒店类型表单 -->
+                    <div class="form-section hotel" id="hotelForm">
+                        <div class="form-field">
+                            <label class="form-label">入住时间（参考）</label>
+                            <input type="time" class="form-input" id="inputHotelTime" value="14:00">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">酒店名称</label>
+                            <input type="text" class="form-input" id="inputHotelName" placeholder="例如：天津解放桥福朋喜来登酒店">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">酒店地址（可选）</label>
+                            <input type="text" class="form-input" id="inputHotelAddress" placeholder="例如：解放北路12号">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">备注（可选）</label>
+                            <textarea class="form-input" id="inputHotelNote" placeholder="例如：办理入住，稍作休整" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 照片上传（所有类型通用） -->
+                    <div class="form-field">
+                        <label class="form-label">添加照片（可选）</label>
+                        <input type="file" class="form-input" id="itemPhotoInput" accept="image/*" multiple>
+                    </div>
+                    <div id="itemPhotoPreview" style="display: none; margin: 16px 0;">
+                        <div style="font-size: 12px; color: #49454F; margin-bottom: 8px;">预览：</div>
+                        <div class="photo-grid" id="itemPhotoPreviewGrid"></div>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="button button-outline" onclick="hideEditDialog()">取消</button>
+                    <button class="button button-filled" onclick="saveSchedule()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Photo Dialog -->
+        <div class="dialog-overlay" id="photoDialog">
+            <div class="dialog">
+                <div class="dialog-title">添加照片</div>
+                <div class="form-field">
+                    <label class="form-label">选择日期</label>
+                    <select class="form-input" id="photoDateSelect">
+                        <!-- 动态加载可选日期 -->
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">选择照片</label>
+                    <input type="file" class="form-input" id="photoInput" accept="image/*" multiple>
+                    <div style="font-size: 12px; color: #49454F; margin-top: 4px;">可以选择多张照片</div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">照片说明（可选）</label>
+                    <textarea class="form-input" id="photoCaption" placeholder="为这些照片添加说明..."></textarea>
+                </div>
+                <div id="photoPreview" style="display: none; margin: 16px 0;">
+                    <div style="font-size: 12px; color: #49454F; margin-bottom: 8px;">预览：</div>
+                    <div class="photo-grid" id="photoPreviewGrid"></div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="button button-outline" onclick="hidePhotoDialog()">取消</button>
+                    <button class="button button-filled" onclick="savePhoto()">保存</button>
+                </div>
+            </div>
+        </div>
+        <div class="dialog-overlay" id="settingsDialog">
+            <div class="dialog">
+                <div class="dialog-title">行程设置</div>
+                <div class="form-field">
+                    <label class="form-label">旅游名称</label>
+                    <input type="text" class="form-input" id="settingsTripName">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">开始日期</label>
+                    <input type="date" class="form-input" id="settingsStartDate">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">结束日期</label>
+                    <input type="date" class="form-input" id="settingsEndDate">
+                </div>
+                <div class="form-field" id="settingsDaysDisplay" style="display: none;">
+                    <div style="font-size: 14px; color: #6750A4; font-weight: 500;">
+                        总天数：<span id="settingsCalculatedDays">-</span> 天
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="button button-outline" onclick="hideSettingsDialog()">取消</button>
+                    <button class="button button-filled" onclick="saveSettings()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Dialog -->
+        <div class="dialog-overlay" id="shareDialog">
+            <div class="dialog">
+                <div class="dialog-title">分享行程</div>
+                <p style="color: #49454F; font-size: 14px; margin-bottom: 16px;">
+                    将下面的链接发送给妈妈，她点击后即可自动导入最新行程。
+                </p>
+                <div class="share-link">travelplan://import?data=eyJ0cmlwTmFtZSI6IuekuuS+i...</div>
+                <div class="share-update-time">最后更新：2024-01-10 09:30</div>
+                <div class="dialog-buttons">
+                    <button class="button button-outline" onclick="copyLink()">复制链接</button>
+                    <button class="button button-filled" onclick="shareLink()">分享</button>
+                </div>
+                <button class="button button-outline" onclick="hideShareDialog()" style="margin-top: 8px; width: 100%;">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL分享功能 - 无需后端服务器
+        function generateShareLink() {
+            const dataStr = JSON.stringify(tripData);
+            const compressed = LZString.compressToEncodedURIComponent(dataStr);
+            const baseUrl = window.location.href.split('?')[0];
+            return `${baseUrl}?data=${compressed}`;
+        }
+
+        function loadFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('data');
+
+            if (dataParam) {
+                try {
+                    const decompressed = LZString.decompressFromEncodedURIComponent(dataParam);
+                    const loadedData = JSON.parse(decompressed);
+                    if (loadedData && loadedData.days) {
+                        tripData = loadedData;
+                        // 保存到localStorage，下次直接加载
+                        localStorage.setItem('tripData', JSON.stringify(tripData));
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('URL数据解析失败:', e);
+                }
+            }
+
+            // 尝试从localStorage加载
+            const saved = localStorage.getItem('tripData');
+            if (saved) {
+                try {
+                    const loadedData = JSON.parse(saved);
+                    if (loadedData && loadedData.days) {
+                        tripData = loadedData;
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('本地数据解析失败:', e);
+                }
+            }
+
+            return false;
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('tripData', JSON.stringify(tripData));
+        }
+
+        function showShareLinkDialog() {
+            const link = generateShareLink();
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+
+            dialog.innerHTML = `
+                <div style="background:white;padding:24px;border-radius:16px;max-width:90%;max-height:80%;overflow:auto;">
+                    <div style="font-size:20px;font-weight:bold;margin-bottom:16px;">分享行程</div>
+                    <div style="margin-bottom:12px;color:#666;">复制下面的链接发送给妈妈：</div>
+                    <textarea readonly style="width:100%;height:100px;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:12px;word-break:break-all;">${link}</textarea>
+                    <div style="display:flex;gap:12px;margin-top:16px;">
+                        <button onclick="navigator.clipboard.writeText('${link.replace(/'/g, "\\'")}').then(() => alert('链接已复制！'))" style="flex:1;padding:12px;background:#58CC02;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;">复制链接</button>
+                        <button onclick="this.closest('div[style*=fixed]').remove()" style="flex:1;padding:12px;background:#ddd;color:#333;border:none;border-radius:8px;font-size:16px;cursor:pointer;">关闭</button>
+                    </div>
+                    <div style="margin-top:12px;font-size:12px;color:#999;">提示：每次修改行程后，需要重新生成并分享新链接</div>
+                </div>
+            `;
+
+            document.body.appendChild(dialog);
+        }
+
+        // 压缩库 - LZ-String
+        var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},i={compressToBase64:function(o){if(null==o)return"";var r=i._compress(o,6,function(o){return n.charAt(o)});switch(r.length%4){default:case 0:return r;case 1:return r+"===";case 2:return r+"==";case 3:return r+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(e){return o(n,r.charAt(e))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(o){return null==o?"":""==o?null:i._decompress(o.length,16384,function(r){return o.charCodeAt(r)-32})},compressToUint8Array:function(o){for(var r=i.compress(o),n=new Uint8Array(2*r.length),e=0,t=r.length;t>e;e++){var s=r.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null===o||void 0===o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;t>e;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(o){return null==o?"":i._compress(o,6,function(o){return e.charAt(o)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(n){return o(e,r.charAt(n))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(o,r,n){if(null==o)return"";var e,t,i,s={},p={},u="",c="",a="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<o.length;i+=1)if(u=o.charAt(i),Object.prototype.hasOwnProperty.call(s,u)||(s[u]=f++,p[u]=!0),c=a+u,Object.prototype.hasOwnProperty.call(s,c))a=c;else{if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++),s[c]=f++,a=String(u)}if(""!==a){if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==r-1){d.push(n(m));break}v++}return d.join("")},decompress:function(o){return null==o?"":""==o?null:i._decompress(o.length,32768,function(r){return o.charCodeAt(r)})},_decompress:function(o,n,e){var t,i,s,p,u,c,a,l,f=[],h=4,d=4,m=3,v="",w=[],A={val:e(0),position:n,index:1};for(i=0;3>i;i+=1)f[i]=i;for(p=0,c=Math.pow(2,2),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(t=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 2:return""}for(f[3]=l,s=l,w.push(l);;){if(A.index>o)return"";for(p=0,c=Math.pow(2,m),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(l=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 2:return w.join("")}if(0==h&&(h=Math.pow(2,m),m++),f[l])v=f[l];else{if(l!==d)return null;v=s+s.charAt(0)}w.push(v),f[d++]=s+v.charAt(0),h--,s=v,0==h&&(h=Math.pow(2,m),m++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module&&(module.exports=LZString);
+
+        let tripData = {
+            tripName: "内蒙古秋季之旅",
+            startDate: "2024-09-24",
+            endDate: "2024-10-01",
+            days: [
+                {
+                    date: "2024-09-24",
+                    displayDate: "09月24日 星期二",
+                    items: [
+                        {
+                            id: "1",
+                            type: "activity",
+                            time: "09:00",
+                            location: "成都家中",
+                            activity: "收拾整理出行行李",
+                            note: ""
+                        },
+                        {
+                            id: "2",
+                            type: "hotel",
+                            time: "14:00",
+                            location: "天府空港云享酒店(天府机场店)",
+                            activity: "前往天府机场周边，办理入住",
+                            note: "地址：东部新区云悦路1号"
+                        }
+                    ],
+                    photos: []
+                },
+                {
+                    date: "2024-09-25",
+                    displayDate: "09月25日 星期三",
+                    items: [
+                        {
+                            id: "3",
+                            type: "flight",
+                            time: "07:00",
+                            location: "成都天府国际机场2号航站楼",
+                            activity: "G54733 成都→赤峰 (11:40抵达)",
+                            note: "航班号：G54733，抵达赤峰玉龙机场11:40"
+                        },
+                        {
+                            id: "4",
+                            type: "hotel",
+                            time: "13:00",
+                            location: "赤峰红山区商业步行街亚朵酒店",
+                            activity: "前往市区办理入住",
+                            note: "地址：哈达西街64号"
+                        },
+                        {
+                            id: "5",
+                            type: "activity",
+                            time: "15:00",
+                            location: "商业步行街",
+                            activity: "步行逛周边商业步行街",
+                            note: ""
+                        },
+                        {
+                            id: "6",
+                            type: "activity",
+                            time: "19:00",
+                            location: "市区",
+                            activity: "市区用餐",
+                            note: ""
+                        }
+                    ],
+                    photos: []
+                },
+                {
+                    date: "2024-09-26",
+                    displayDate: "09月26日 星期四",
+                    items: [
+                        {
+                            id: "7",
+                            type: "activity",
+                            time: "08:00",
+                            location: "赤峰酒店",
+                            activity: "司机接驾，开启4日私家团行程",
+                            note: "前往玉龙沙湖景区"
+                        },
+                        {
+                            id: "8",
+                            type: "activity",
+                            time: "10:00",
+                            location: "玉龙沙湖景区",
+                            activity: "游览玉龙沙湖景区",
+                            note: ""
+                        },
+                        {
+                            id: "9",
+                            type: "hotel",
+                            time: "18:00",
+                            location: "赤峰玉龙沙湖集装箱温泉酒店",
+                            activity: "入住酒店，可泡沙漠温泉",
+                            note: ""
+                        }
+                    ],
+                    photos: []
+                },
+                {
+                    date: "2024-09-27",
+                    displayDate: "09月27日 星期五",
+                    items: [
+                        {
+                            id: "10",
+                            type: "activity",
+                            time: "09:00",
+                            location: "阿斯哈图石林景区",
+                            activity: "游览阿斯哈图石林景区",
+                            note: ""
+                        },
+                        {
+                            id: "11",
+                            type: "activity",
+                            time: "14:00",
+                            location: "黄岗梁国家森林公园",
+                            activity: "游览黄岗梁国家森林公园",
+                            note: ""
+                        },
+                        {
+                            id: "12",
+                            type: "hotel",
+                            time: "18:00",
+                            location: "阿斯哈图石林/经棚镇周边酒店",
+                            activity: "入住私家团配套酒店",
+                            note: ""
+                        }
+                    ],
+                    photos: []
+                },
+                {
+                    date: "2024-09-28",
+                    displayDate: "09月28日 星期六",
+                    items: [
+                        {
+                            id: "13",
+                            type: "activity",
+                            time: "09:00",
+                            location: "乌兰布统旅游区核心草原景区",
+                            activity: "游览核心草原景区",
+                            note: ""
+                        },
+                        {
+                            id: "14",
+                            type: "activity",
+                            time: "14:00",
+                            location: "乌兰布统影视基地、公主湖",
+                            activity: "游览影视基地、公主湖等周边景点",
+                            note: ""
+                        },
+                        {
+                            id: "15",
+                            type: "hotel",
+                            time: "18:00",
+                            location: "乌兰布统景区周边酒店",
+                            activity: "入住私家团配套酒店",
+                            note: ""
+                        }
+                    ],
+                    photos: []
+                },
+                {
+                    date: "2024-09-29",
+                    displayDate: "09月29日 星期日",
+                    items: [
+                        {
+                            id: "16",
+                            type: "activity",
+                            time: "09:00",
+                            location: "私家团最后行程",
+                            activity: "走完私家团最后一段，返回赤峰市区",
+                            note: "私家团结束"
+                        },
+                        {
+                            id: "17",
+                            type: "flight",
+                            time: "15:35",
+                            location: "赤峰玉龙机场",
+                            activity: "GS7916 赤峰→天津 (17:00抵达)",
+                            note: "航班号：GS7916，抵达天津滨海国际机场17:00"
+                        },
+                        {
+                            id: "18",
+                            type: "hotel",
+                            time: "18:30",
+                            location: "天津解放桥福朋喜来登酒店",
+                            activity: "前往市区办理入住",
+                            note: "地址：解放北路12号"
+                        },
+                        {
+                            id: "19",
+                            type: "activity",
+                            time: "20:00",
+                            location: "解放桥、津湾广场",
+                            activity: "步行游览解放桥、津湾广场，沿河用餐",
+                            note: ""
+                        }
+                    ],
+                    photos: []
+                },
+                {
+                    date: "2024-09-30",
+                    displayDate: "09月30日 星期一",
+                    items: [
+                        {
+                            id: "20",
+                            type: "activity",
+                            time: "09:00",
+                            location: "五大道历史文化街区",
+                            activity: "逛五大道，游览睦南道、大理道等小洋楼建筑群",
+                            note: ""
+                        },
+                        {
+                            id: "21",
+                            type: "activity",
+                            time: "14:00",
+                            location: "静园",
+                            activity: "游览静园",
+                            note: "可顺路逛天津意式风情区"
+                        },
+                        {
+                            id: "22",
+                            type: "hotel",
+                            time: "16:00",
+                            location: "天津解放桥福朋喜来登酒店",
+                            activity: "返回酒店午休",
+                            note: ""
+                        },
+                        {
+                            id: "23",
+                            type: "activity",
+                            time: "20:00",
+                            location: "海河沿岸",
+                            activity: "海河沿岸散步，观赏海河夜景",
+                            note: ""
+                        }
+                    ],
+                    photos: []
+                },
+                {
+                    date: "2024-10-01",
+                    displayDate: "10月01日 星期二",
+                    items: [
+                        {
+                            id: "24",
+                            type: "activity",
+                            time: "10:00",
+                            location: "酒店周边",
+                            activity: "酒店休整，在周边采购天津特产",
+                            note: ""
+                        },
+                        {
+                            id: "25",
+                            type: "flight",
+                            time: "15:00",
+                            location: "天津滨海国际机场2号航站楼",
+                            activity: "CA2963 天津→成都 (17:55抵达)",
+                            note: "航班号：CA2963，抵达成都天府国际机场17:55，行程结束"
+                        }
+                    ],
+                    photos: []
+                }
+            ]
+        };
+
+        let currentDay = 0;
+        let isSetupComplete = true; // 自动跳过设置页，直接显示行程
+        let selectedPhotos = [];
+        let selectedItemPhotos = [];
+
+        // 监听日期变化，自动计算天数
+        document.addEventListener('DOMContentLoaded', function() {
+            const setupStartDate = document.getElementById('setupStartDate');
+            const setupEndDate = document.getElementById('setupEndDate');
+
+            function updateSetupDays() {
+                const start = setupStartDate.value;
+                const end = setupEndDate.value;
+                if (start && end) {
+                    const days = calculateDays(start, end);
+                    if (days > 0) {
+                        document.getElementById('calculatedDays').textContent = days;
+                        document.getElementById('totalDaysDisplay').style.display = 'block';
+                    } else {
+                        document.getElementById('totalDaysDisplay').style.display = 'none';
+                    }
+                }
+            }
+
+            setupStartDate.addEventListener('change', updateSetupDays);
+            setupEndDate.addEventListener('change', updateSetupDays);
+        });
+
+        function calculateDays(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = end - start;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // 包含开始和结束日
+            return diffDays;
+        }
+
+        function createTrip() {
+            const tripName = document.getElementById('setupTripName').value;
+            const startDate = document.getElementById('setupStartDate').value;
+            const endDate = document.getElementById('setupEndDate').value;
+
+            if (!tripName || !startDate || !endDate) {
+                alert('请填写所有信息');
+                return;
+            }
+
+            const totalDays = calculateDays(startDate, endDate);
+
+            if (totalDays <= 0) {
+                alert('结束日期必须大于或等于开始日期');
+                return;
+            }
+
+            // 生成日期数组
+            const days = [];
+            const start = new Date(startDate);
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+            for (let i = 0; i < totalDays; i++) {
+                const currentDate = new Date(start);
+                currentDate.setDate(start.getDate() + i);
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const weekday = weekdays[currentDate.getDay()];
+
+                days.push({
+                    date: dateStr,
+                    displayDate: `${month}月${day}日 ${weekday}`,
+                    items: [],
+                    photos: []
+                });
+            }
+
+            tripData = {
+                tripName: tripName,
+                startDate: startDate,
+                endDate: endDate,
+                days: days
+            };
+
+            isSetupComplete = true;
+            updateTripInfo();
+            showOverview();
+        }
+
+        function updateTripInfo() {
+            if (tripData.days.length === 0) return;
+
+            document.getElementById('tripTitle').textContent = tripData.tripName;
+
+            const startDate = tripData.startDate;
+            const endDate = tripData.endDate;
+            document.getElementById('tripDates').textContent = `${startDate} 至 ${endDate}`;
+            document.getElementById('tripDuration').textContent = `共 ${tripData.days.length} 天`;
+        }
+
+        function renderOverview() {
+            const dayList = document.getElementById('dayList');
+            const today = new Date().toISOString().split('T')[0];
+
+            dayList.innerHTML = tripData.days.map((day, index) => {
+                const isToday = day.date === today;
+                const route = day.items.map(item => item.location).join(' → ');
+
+                return `
+                    <div class="day-card ${isToday ? 'today' : ''}" onclick="showDetail(${index})">
+                        <div class="day-card-header">
+                            <div>
+                                <div class="day-date">${day.displayDate}</div>
+                                ${isToday ? '<div class="today-badge">今天</div>' : ''}
+                            </div>
+                            <div class="day-item-count">${day.items.length} 项行程</div>
+                        </div>
+                        ${route ? `<div class="day-route">${route}</div>` : '<div class="day-route" style="color: #49454F;">暂无行程</div>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showOverview() {
+            renderOverview();
+            document.getElementById('setupScreen').classList.remove('active');
+            document.getElementById('overviewScreen').classList.add('active');
+            document.getElementById('detailScreen').classList.remove('active');
+        }
+
+        function showDetail(dayIndex) {
+            currentDay = dayIndex;
+
+            // 渲染日期标签
+            const dateTabs = document.getElementById('dateTabs');
+            dateTabs.innerHTML = tripData.days.map((day, index) => {
+                const shortDate = day.displayDate.split(' ')[0]; // 只显示"01月10日"
+                return `<div class="date-tab ${index === dayIndex ? 'active' : ''}" onclick="switchToDay(${index})">${shortDate}</div>`;
+            }).join('');
+
+            // 滚动到当前日期标签
+            setTimeout(() => {
+                const activeTab = dateTabs.querySelector('.date-tab.active');
+                if (activeTab) {
+                    activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }, 100);
+
+            // 渲染所有天的内容（用于滑动）
+            const contentSlider = document.getElementById('contentSlider');
+            contentSlider.innerHTML = tripData.days.map((day, index) => {
+                const scheduleHtml = day.items.length === 0 ? `
+                    <div class="mascot-welcome">
+                        <div class="koala-icon" style="margin: 0 auto 16px;">
+                            <div class="koala-face">
+                                <div class="koala-eyes">
+                                    <div class="koala-eye"></div>
+                                    <div class="koala-eye"></div>
+                                </div>
+                                <div class="koala-nose"></div>
+                            </div>
+                            <div class="koala-cheek left"></div>
+                            <div class="koala-cheek right"></div>
+                        </div>
+                        <div class="mascot-text">还没有添加行程哦～<br>点击右下角按钮开始规划吧！</div>
+                    </div>
+                ` : day.items.map(item => {
+                    const typeClass = item.type || 'activity';
+
+                    // 不同类型的卡片内容
+                    let cardContent = '';
+
+                    if (typeClass === 'flight') {
+                        // 航班：高亮时间段
+                        const arrivalTime = item.note && item.note.match(/(\d{2}:\d{2})抵达/)?.[1];
+                        const timeDisplay = arrivalTime ? `${item.time}-${arrivalTime}` : item.time;
+
+                        cardContent = `
+                            <div style="display: flex; gap: 16px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; min-width: 60px;">
+                                    <div style="font-size: 36px; margin-bottom: 4px;">✈️</div>
+                                    <div style="font-size: 18px; font-weight: 800; color: #1CB0F6; text-align: center; line-height: 1.2;">${timeDisplay}</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 8px;">${item.activity}</div>
+                                    ${item.note ? `<div style="background: #E3F6FF; padding: 10px; border-radius: 10px; font-size: 13px; color: #1A75B8;">${item.note}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    } else if (typeClass === 'hotel') {
+                        // 酒店：弱化时间
+                        cardContent = `
+                            <div style="display: flex; gap: 16px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; min-width: 60px;">
+                                    <div style="font-size: 36px; margin-bottom: 4px;">🏨</div>
+                                    <div style="font-size: 14px; font-weight: 500; color: #999; text-align: center;">${item.time}</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">${item.location}</div>
+                                    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">${item.activity}</div>
+                                    ${item.note ? `<div style="background: #FFF9E6; padding: 10px; border-radius: 10px; font-size: 13px; color: #7A5C00;">${item.note}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // 活动：绿色高亮时间
+                        cardContent = `
+                            <div style="display: flex; gap: 16px;">
+                                <div style="min-width: 60px; text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 800; color: #58CC02;">${item.time}</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">${item.location}</div>
+                                    <div style="font-size: 14px; color: #666; line-height: 1.5;">${item.activity}</div>
+                                    ${item.note ? `<div style="margin-top: 8px; padding: 8px 12px; background: #F0F9E8; border-left: 3px solid #58CC02; border-radius: 6px; font-size: 13px; color: #3A7A00;">${item.note}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                    <div class="schedule-card ${typeClass}" data-item-id="${item.id}" data-day-index="${index}">
+                        ${cardContent}
+                        ${item.photos && item.photos.length > 0 ? `
+                            <div class="schedule-photos" style="margin-top: 12px;">
+                                ${item.photos.map(photo => `
+                                    <div class="schedule-photo-item" onclick="viewPhoto('${photo.url}', '${photo.caption || ''}')">
+                                        <img src="${photo.url}" alt="">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="schedule-actions">
+                            <button class="action-btn edit" onclick="event.stopPropagation(); showEditItemDialog('${item.id}', ${index})">
+                                <span>✏️</span>
+                                <span class="action-btn-text">编辑</span>
+                            </button>
+                            <button class="action-btn delete" onclick="event.stopPropagation(); confirmDeleteItem('${item.id}', ${index})">
+                                <span>🗑️</span>
+                                <span class="action-btn-text">删除</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+
+                return `<div class="detail-content-page"><div class="schedule-list">${scheduleHtml}</div></div>`;
+            }).join('');
+
+            // 更新标题
+            updateDetailHeader(dayIndex);
+
+            // 滑动到当前天
+            contentSlider.style.transform = `translateX(-${dayIndex * 100}%)`;
+
+            // 添加触摸滑动支持
+            setupSwipeGesture();
+
+            // 添加行程卡片左滑功能
+            setupItemSwipe();
+
+            document.getElementById('overviewScreen').classList.remove('active');
+            document.getElementById('detailScreen').classList.add('active');
+        }
+
+        function setupItemSwipe() {
+            const cards = document.querySelectorAll('.schedule-card');
+            let currentSwipedCard = null;
+
+            cards.forEach(card => {
+                let startX = 0;
+                let startY = 0;
+                let currentX = 0;
+                let isDragging = false;
+                let isHorizontalSwipe = false;
+
+                // 触摸事件
+                const touchStart = (e) => {
+                    if (currentSwipedCard && currentSwipedCard !== card) {
+                        currentSwipedCard.classList.remove('swiping');
+                    }
+
+                    const touch = e.touches ? e.touches[0] : e;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    isDragging = true;
+                    isHorizontalSwipe = false;
+                };
+
+                const touchMove = (e) => {
+                    if (!isDragging) return;
+
+                    const touch = e.touches ? e.touches[0] : e;
+                    currentX = touch.clientX;
+                    const currentY = touch.clientY;
+                    const diffX = startX - currentX;
+                    const diffY = Math.abs(startY - currentY);
+
+                    if (!isHorizontalSwipe && Math.abs(diffX) > 10) {
+                        if (Math.abs(diffX) > diffY) {
+                            isHorizontalSwipe = true;
+                        }
+                    }
+
+                    if (isHorizontalSwipe) {
+                        if (e.preventDefault) e.preventDefault();
+
+                        if (diffX > 20) {
+                            card.classList.add('swiping');
+                            currentSwipedCard = card;
+                        } else if (diffX < -20) {
+                            card.classList.remove('swiping');
+                            if (currentSwipedCard === card) {
+                                currentSwipedCard = null;
+                            }
+                        }
+                    }
+                };
+
+                const touchEnd = () => {
+                    isDragging = false;
+                    isHorizontalSwipe = false;
+                };
+
+                // 添加触摸和鼠标事件（电脑上用鼠标测试）
+                card.addEventListener('touchstart', touchStart, { passive: true });
+                card.addEventListener('touchmove', touchMove, { passive: false });
+                card.addEventListener('touchend', touchEnd, { passive: true });
+
+                card.addEventListener('mousedown', touchStart);
+                card.addEventListener('mousemove', touchMove);
+                card.addEventListener('mouseup', touchEnd);
+                card.addEventListener('mouseleave', touchEnd);
+
+                // 点击关闭滑动状态
+                card.addEventListener('click', (e) => {
+                    if (card.classList.contains('swiping')) {
+                        if (!e.target.closest('.schedule-actions')) {
+                            card.classList.remove('swiping');
+                            if (currentSwipedCard === card) {
+                                currentSwipedCard = null;
+                            }
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+        }
+
+        function switchToDay(dayIndex) {
+            currentDay = dayIndex;
+
+            // 更新标签高亮
+            const tabs = document.querySelectorAll('.date-tab');
+            tabs.forEach((tab, index) => {
+                if (index === dayIndex) {
+                    tab.classList.add('active');
+                    tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // 更新标题
+            updateDetailHeader(dayIndex);
+
+            // 滑动到对应天
+            const contentSlider = document.getElementById('contentSlider');
+            contentSlider.style.transform = `translateX(-${dayIndex * 100}%)`;
+        }
+
+        function updateDetailHeader(dayIndex) {
+            const day = tripData.days[dayIndex];
+            document.getElementById('detailCurrentDate').textContent = day.displayDate;
+            document.getElementById('detailItemCount').textContent = `${day.items.length} 项行程`;
+
+            // 收集所有照片：当日照片 + 各行程照片
+            const allPhotos = [];
+
+            // 添加当日照片
+            if (day.photos && day.photos.length > 0) {
+                allPhotos.push(...day.photos);
+            }
+
+            // 添加各行程中的照片
+            day.items.forEach(item => {
+                if (item.photos && item.photos.length > 0) {
+                    allPhotos.push(...item.photos);
+                }
+            });
+
+            // 渲染照片预览
+            const photosPreview = document.getElementById('detailPhotosPreview');
+            if (allPhotos.length === 0) {
+                photosPreview.innerHTML = '';
+            } else if (allPhotos.length <= 3) {
+                // 显示所有照片
+                photosPreview.innerHTML = allPhotos.map(photo => `
+                    <div class="detail-photo-thumb" onclick="viewPhoto('${photo.url}', '${photo.caption || ''}')">
+                        <img src="${photo.url}" alt="">
+                    </div>
+                `).join('');
+            } else {
+                // 显示前3张 + 更多
+                photosPreview.innerHTML = allPhotos.slice(0, 3).map(photo => `
+                    <div class="detail-photo-thumb" onclick="viewPhoto('${photo.url}', '${photo.caption || ''}')">
+                        <img src="${photo.url}" alt="">
+                    </div>
+                `).join('') + `<div class="detail-photo-more" onclick="showAllPhotos(${dayIndex})">+${allPhotos.length - 3}</div>`;
+            }
+        }
+
+        function showAllPhotos(dayIndex) {
+            alert('演示版：将打开照片画廊查看所有照片');
+        }
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let isDragging = false;
+        let startTransform = 0;
+
+        function setupSwipeGesture() {
+            const slider = document.getElementById('contentSlider');
+            const wrapper = slider.parentElement;
+
+            // 移除旧的监听器
+            wrapper.ontouchstart = null;
+            wrapper.ontouchmove = null;
+            wrapper.ontouchend = null;
+
+            wrapper.addEventListener('touchstart', (e) => {
+                // 如果点击在行程卡片上，不处理页面滑动
+                if (e.target.closest('.schedule-card')) {
+                    return;
+                }
+
+                touchStartX = e.touches[0].clientX;
+                isDragging = true;
+                startTransform = currentDay * 100;
+                slider.style.transition = 'none';
+            });
+
+            wrapper.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+
+                const currentX = e.touches[0].clientX;
+                const diff = currentX - touchStartX;
+                const percentDiff = (diff / wrapper.offsetWidth) * 100;
+                const newTransform = -startTransform + percentDiff;
+
+                // 限制滑动范围
+                const minTransform = -(tripData.days.length - 1) * 100;
+                const clampedTransform = Math.max(minTransform, Math.min(0, newTransform));
+
+                slider.style.transform = `translateX(${clampedTransform}%)`;
+            });
+
+            wrapper.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+
+                touchEndX = e.changedTouches[0].clientX;
+                isDragging = false;
+                slider.style.transition = 'transform 0.3s ease';
+
+                const diffX = touchStartX - touchEndX;
+
+                // 判断是否切换页面（滑动超过50px）
+                if (Math.abs(diffX) > 50) {
+                    if (diffX > 0 && currentDay < tripData.days.length - 1) {
+                        // 向左滑，下一天
+                        switchToDay(currentDay + 1);
+                    } else if (diffX < 0 && currentDay > 0) {
+                        // 向右滑，上一天
+                        switchToDay(currentDay - 1);
+                    } else {
+                        // 回弹
+                        slider.style.transform = `translateX(-${currentDay * 100}%)`;
+                    }
+                } else {
+                    // 回弹
+                    slider.style.transform = `translateX(-${currentDay * 100}%)`;
+                }
+            });
+        }
+
+        function selectItemType(type) {
+            // 更新类型选择器UI
+            document.querySelectorAll('.type-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            document.querySelector(`.type-option.${type}`).classList.add('active');
+
+            // 更新表单显示
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${type}Form`).classList.add('active');
+
+            // 保存当前类型
+            document.getElementById('editingItemType').value = type;
+        }
+
+        function showAddDialog() {
+            document.getElementById('editDialogTitle').textContent = '添加行程';
+            document.getElementById('editingItemId').value = '';
+
+            // 重置为活动类型
+            selectItemType('activity');
+
+            // 填充日期选择器
+            const dateSelect = document.getElementById('inputDateSelect');
+            dateSelect.innerHTML = tripData.days.map((day, index) => {
+                const selected = index === currentDay ? 'selected' : '';
+                return `<option value="${index}" ${selected}>${day.displayDate}</option>`;
+            }).join('');
+
+            // 清空所有表单
+            document.getElementById('inputTime').value = '09:00';
+            document.getElementById('inputLocation').value = '';
+            document.getElementById('inputActivity').value = '';
+            document.getElementById('inputNote').value = '';
+
+            document.getElementById('inputFlightTime').value = '09:00';
+            document.getElementById('inputArrivalTime').value = '';
+            document.getElementById('inputFlightFrom').value = '';
+            document.getElementById('inputFlightTo').value = '';
+            document.getElementById('inputFlightNumber').value = '';
+
+            document.getElementById('inputHotelTime').value = '14:00';
+            document.getElementById('inputHotelName').value = '';
+            document.getElementById('inputHotelAddress').value = '';
+            document.getElementById('inputHotelNote').value = '';
+
+            // 监听行程照片选择
+            const itemPhotoInput = document.getElementById('itemPhotoInput');
+            itemPhotoInput.value = '';
+            itemPhotoInput.onchange = function(e) {
+                selectedItemPhotos = [];
+                const files = e.target.files;
+                const previewGrid = document.getElementById('itemPhotoPreviewGrid');
+                previewGrid.innerHTML = '';
+
+                if (files.length > 0) {
+                    document.getElementById('itemPhotoPreview').style.display = 'block';
+
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            selectedItemPhotos.push({
+                                url: e.target.result,
+                                caption: ''
+                            });
+
+                            const photoDiv = document.createElement('div');
+                            photoDiv.className = 'photo-item';
+                            photoDiv.innerHTML = `<img src="${e.target.result}" alt="预览">`;
+                            previewGrid.appendChild(photoDiv);
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                } else {
+                    document.getElementById('itemPhotoPreview').style.display = 'none';
+                }
+            };
+
+            document.getElementById('editDialog').classList.add('active');
+        }
+
+        function showEditItemDialog(itemId, dayIndex) {
+            const day = tripData.days[dayIndex];
+            const item = day.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById('editDialogTitle').textContent = '编辑行程';
+            document.getElementById('editingItemId').value = itemId;
+
+            // 填充日期选择器
+            const dateSelect = document.getElementById('inputDateSelect');
+            dateSelect.innerHTML = tripData.days.map((d, index) => {
+                const selected = index === dayIndex ? 'selected' : '';
+                return `<option value="${index}" ${selected}>${d.displayDate}</option>`;
+            }).join('');
+
+            // 填充表单
+            document.getElementById('inputTime').value = item.time;
+            document.getElementById('inputLocation').value = item.location;
+            document.getElementById('inputActivity').value = item.activity;
+            document.getElementById('inputTemp').value = item.temp || '';
+            document.getElementById('inputNote').value = item.note || '';
+
+            // 监听行程照片选择
+            const itemPhotoInput = document.getElementById('itemPhotoInput');
+            itemPhotoInput.onchange = function(e) {
+                selectedItemPhotos = [];
+                const files = e.target.files;
+                const previewGrid = document.getElementById('itemPhotoPreviewGrid');
+                previewGrid.innerHTML = '';
+
+                if (files.length > 0) {
+                    document.getElementById('itemPhotoPreview').style.display = 'block';
+
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            selectedItemPhotos.push({
+                                url: e.target.result,
+                                caption: ''
+                            });
+
+                            const photoDiv = document.createElement('div');
+                            photoDiv.className = 'photo-item';
+                            photoDiv.innerHTML = `<img src="${e.target.result}" alt="预览">`;
+                            previewGrid.appendChild(photoDiv);
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                } else {
+                    document.getElementById('itemPhotoPreview').style.display = 'none';
+                }
+            };
+
+            document.getElementById('editDialog').classList.add('active');
+        }
+
+        function confirmDeleteItem(itemId, dayIndex) {
+            if (confirm('确定要删除这项行程吗？')) {
+                deleteScheduleItem(itemId, dayIndex);
+            }
+        }
+
+        function deleteScheduleItem(itemId, dayIndex) {
+            tripData.days[dayIndex].items = tripData.days[dayIndex].items.filter(i => i.id !== itemId);
+            saveToLocal();
+            showDetail(currentDay);
+        }
+
+        function hideEditDialog() {
+            document.getElementById('editDialog').classList.remove('active');
+            selectedItemPhotos = [];
+        }
+
+        function saveSchedule() {
+            const dayIndex = parseInt(document.getElementById('inputDateSelect').value);
+            const editingItemId = document.getElementById('editingItemId').value;
+            const itemType = document.getElementById('editingItemType').value;
+
+            let time, location, activity, note;
+
+            // 根据类型收集数据
+            if (itemType === 'flight') {
+                const flightTime = document.getElementById('inputFlightTime').value;
+                const arrivalTime = document.getElementById('inputArrivalTime').value;
+                const flightFrom = document.getElementById('inputFlightFrom').value;
+                const flightTo = document.getElementById('inputFlightTo').value;
+                const flightNumber = document.getElementById('inputFlightNumber').value;
+
+                if (!flightFrom || !flightTo) {
+                    alert('请填写出发地和目的地');
+                    return;
+                }
+
+                time = flightTime;
+                location = flightFrom;
+                activity = `${flightNumber ? flightNumber + ' ' : ''}${flightFrom.split('机场')[0]}→${flightTo.split('机场')[0]}${arrivalTime ? ' (' + arrivalTime + '抵达)' : ''}`;
+                note = `航班号：${flightNumber || '未填写'}，抵达${flightTo}${arrivalTime ? arrivalTime : ''}`;
+
+            } else if (itemType === 'hotel') {
+                const hotelTime = document.getElementById('inputHotelTime').value;
+                const hotelName = document.getElementById('inputHotelName').value;
+                const hotelAddress = document.getElementById('inputHotelAddress').value;
+                const hotelNote = document.getElementById('inputHotelNote').value;
+
+                if (!hotelName) {
+                    alert('请填写酒店名称');
+                    return;
+                }
+
+                time = hotelTime;
+                location = hotelName;
+                activity = hotelNote || '办理入住';
+                note = hotelAddress ? `地址：${hotelAddress}` : '';
+
+            } else {
+                // activity
+                time = document.getElementById('inputTime').value;
+                location = document.getElementById('inputLocation').value;
+                activity = document.getElementById('inputActivity').value;
+                note = document.getElementById('inputNote').value;
+
+                if (!location || !activity) {
+                    alert('请填写地点和活动内容');
+                    return;
+                }
+            }
+
+            if (editingItemId) {
+                // 编辑模式
+                const day = tripData.days[dayIndex];
+                const item = day.items.find(i => i.id === editingItemId);
+                if (item) {
+                    item.type = itemType;
+                    item.time = time;
+                    item.location = location;
+                    item.activity = activity;
+                    item.note = note;
+
+                    // 添加照片
+                    if (selectedItemPhotos.length > 0) {
+                        if (!item.photos) item.photos = [];
+                        item.photos.push(...selectedItemPhotos);
+                    }
+
+                    // 重新排序
+                    day.items.sort((a, b) => a.time.localeCompare(b.time));
+                }
+            } else {
+                // 添加模式
+                const newItem = {
+                    id: Date.now().toString(),
+                    type: itemType,
+                    time: time,
+                    location: location,
+                    activity: activity,
+                    note: note,
+                    photos: selectedItemPhotos.length > 0 ? [...selectedItemPhotos] : []
+                };
+
+                // 添加到对应日期并按时间排序
+                tripData.days[dayIndex].items.push(newItem);
+                tripData.days[dayIndex].items.sort((a, b) => a.time.localeCompare(b.time));
+            }
+
+            hideEditDialog();
+
+            // 保存到本地
+            saveToLocal();
+
+            // 如果当前在详情页且是同一天，刷新详情
+            if (document.getElementById('detailScreen').classList.contains('active') && dayIndex === currentDay) {
+                showDetail(dayIndex);
+            } else {
+                // 否则回到概览
+                showOverview();
+            }
+        }
+
+        function showTripSettings() {
+            document.getElementById('settingsTripName').value = tripData.tripName;
+            document.getElementById('settingsStartDate').value = tripData.startDate;
+            document.getElementById('settingsEndDate').value = tripData.endDate;
+
+            const days = calculateDays(tripData.startDate, tripData.endDate);
+            document.getElementById('settingsCalculatedDays').textContent = days;
+            document.getElementById('settingsDaysDisplay').style.display = 'block';
+
+            // 监听设置对话框中的日期变化
+            const settingsStartDate = document.getElementById('settingsStartDate');
+            const settingsEndDate = document.getElementById('settingsEndDate');
+
+            function updateSettingsDays() {
+                const start = settingsStartDate.value;
+                const end = settingsEndDate.value;
+                if (start && end) {
+                    const days = calculateDays(start, end);
+                    if (days > 0) {
+                        document.getElementById('settingsCalculatedDays').textContent = days;
+                        document.getElementById('settingsDaysDisplay').style.display = 'block';
+                    }
+                }
+            }
+
+            settingsStartDate.onchange = updateSettingsDays;
+            settingsEndDate.onchange = updateSettingsDays;
+
+            document.getElementById('settingsDialog').classList.add('active');
+        }
+
+        function hideSettingsDialog() {
+            document.getElementById('settingsDialog').classList.remove('active');
+        }
+
+        function saveSettings() {
+            const tripName = document.getElementById('settingsTripName').value;
+            const startDate = document.getElementById('settingsStartDate').value;
+            const endDate = document.getElementById('settingsEndDate').value;
+
+            if (!tripName || !startDate || !endDate) {
+                alert('请填写所有信息');
+                return;
+            }
+
+            const totalDays = calculateDays(startDate, endDate);
+
+            if (totalDays <= 0) {
+                alert('结束日期必须大于或等于开始日期');
+                return;
+            }
+
+            // 重新生成日期（保留已有行程）
+            const oldDays = [...tripData.days];
+            const days = [];
+            const start = new Date(startDate);
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+            for (let i = 0; i < totalDays; i++) {
+                const currentDate = new Date(start);
+                currentDate.setDate(start.getDate() + i);
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const weekday = weekdays[currentDate.getDay()];
+
+                // 查找是否有旧数据
+                const oldDay = oldDays.find(d => d.date === dateStr);
+
+                days.push({
+                    date: dateStr,
+                    displayDate: `${month}月${day}日 ${weekday}`,
+                    items: oldDay ? oldDay.items : []
+                });
+            }
+
+            tripData = {
+                tripName: tripName,
+                startDate: startDate,
+                endDate: endDate,
+                days: days
+            };
+
+            updateTripInfo();
+            saveToLocal();
+            hideSettingsDialog();
+            showOverview();
+        }
+
+        function showShareDialog() {
+            showShareLinkDialog();
+        }
+
+        function hideShareDialog() {
+            // 使用新的对话框，不需要这个函数了
+        }
+
+        function copyLink() {
+            const link = generateShareLink();
+            navigator.clipboard.writeText(link).then(() => {
+                alert('✓ 链接已复制！\n\n发送给妈妈后，她点击链接即可看到最新行程。');
+            }).catch(() => {
+                // 如果复制失败，显示链接让用户手动复制
+                prompt('请复制下面的链接：', link);
+            });
+        }
+
+        function shareLink() {
+            alert('演示版：将打开系统分享菜单\n\n在实际应用中，可以通过微信、短信等方式分享给妈妈。');
+        }
+
+        function showPhotoDialog() {
+            // 填充日期选择器
+            const dateSelect = document.getElementById('photoDateSelect');
+            dateSelect.innerHTML = tripData.days.map((day, index) => {
+                const selected = index === currentDay ? 'selected' : '';
+                return `<option value="${index}" ${selected}>${day.displayDate}</option>`;
+            }).join('');
+
+            // 监听文件选择
+            const photoInput = document.getElementById('photoInput');
+            photoInput.onchange = function(e) {
+                selectedPhotos = [];
+                const files = e.target.files;
+                const previewGrid = document.getElementById('photoPreviewGrid');
+                previewGrid.innerHTML = '';
+
+                if (files.length > 0) {
+                    document.getElementById('photoPreview').style.display = 'block';
+
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            selectedPhotos.push({
+                                url: e.target.result,
+                                caption: ''
+                            });
+
+                            const photoDiv = document.createElement('div');
+                            photoDiv.className = 'photo-item';
+                            photoDiv.innerHTML = `<img src="${e.target.result}" alt="预览">`;
+                            previewGrid.appendChild(photoDiv);
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                } else {
+                    document.getElementById('photoPreview').style.display = 'none';
+                }
+            };
+
+            document.getElementById('photoDialog').classList.add('active');
+        }
+
+        function hidePhotoDialog() {
+            document.getElementById('photoDialog').classList.remove('active');
+            document.getElementById('photoInput').value = '';
+            document.getElementById('photoCaption').value = '';
+            document.getElementById('photoPreview').style.display = 'none';
+            selectedPhotos = [];
+        }
+
+        function savePhoto() {
+            const dayIndex = parseInt(document.getElementById('photoDateSelect').value);
+            const caption = document.getElementById('photoCaption').value;
+
+            if (selectedPhotos.length === 0) {
+                alert('请选择至少一张照片');
+                return;
+            }
+
+            // 为所有照片添加相同的说明
+            const photosWithCaption = selectedPhotos.map(photo => ({
+                ...photo,
+                caption: caption
+            }));
+
+            // 添加到对应日期
+            if (!tripData.days[dayIndex].photos) {
+                tripData.days[dayIndex].photos = [];
+            }
+            tripData.days[dayIndex].photos.push(...photosWithCaption);
+
+            hidePhotoDialog();
+
+            // 保存到本地
+            saveToLocal();
+
+            // 如果当前在详情页，刷新显示
+            if (document.getElementById('detailScreen').classList.contains('active')) {
+                showDetail(currentDay);
+            }
+        }
+
+        function viewPhoto(url, caption) {
+            // 在实际应用中会打开大图查看
+            alert(`查看照片\n\n${caption || '无说明'}`);
+        }
+
+        // 初始化 - 先尝试从URL加载，否则使用默认数据
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired');
+
+            // 尝试从URL或localStorage加载
+            const loaded = loadFromURL();
+
+            if (loaded) {
+                console.log('数据已加载');
+            } else {
+                console.log('使用默认数据');
+            }
+
+            if (isSetupComplete && tripData.days.length > 0) {
+                console.log('Calling updateTripInfo and showOverview');
+                updateTripInfo();
+                showOverview();
+            }
+
+            // 注册Service Worker (PWA支持)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            }
+        });
+    </script>
+</body>
+</html>
